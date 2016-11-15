@@ -9,23 +9,44 @@ var uglify = require('gulp-uglify');
 
 module.exports = function() {
 
-    var bundler = browserify({
-        entries: ['src/assets/js/app.jsx'],
-        debug: true
-    });
+    /* Bundling function for JSX 
+    ----------------------------------- */
+    function bundleJSX(bundler, src) {
 
-    bundler.transform(babelify);
+        bundler.transform(babelify);
 
-    bundler.bundle()
-        .on('error', function(err) {
-            console.error(err);
+        bundler.bundle()
+            .on('error', function(err) {
+                console.error(err);
+            })
+            .pipe(source(src))
+            .pipe(buffer())
+            .pipe(sourcemaps.init({
+                loadMaps: true
+            }))
+            .pipe(uglify())
+            .pipe(sourcemaps.write('./'))
+            .pipe(gulp.dest('src/assets/dist/js'));
+    }
+
+
+    /* Sources to transform
+    ----------------------------------- */
+    var sources = {
+        app: browserify({
+            entries: ['src/assets/js/app.jsx'],
+            debug: true
+        }),
+
+        github: browserify({
+            entries: ['src/assets/js/github.jsx'],
+            debug: true
         })
-        .pipe(source('app.js'))
-        .pipe(buffer())
-        .pipe(sourcemaps.init({
-            loadMaps: true
-        }))
-        .pipe(uglify())
-        .pipe(sourcemaps.write('./'))
-        .pipe(gulp.dest('src/assets/dist/js'));
+    };
+
+
+    /* Call bundler
+    ----------------------------------- */
+    bundleJSX(sources.app, 'app.js');
+    bundleJSX(sources.github, 'github.js');
 };

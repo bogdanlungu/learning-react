@@ -1,11 +1,20 @@
 /* Define 
 ----------------------------------- */
 var Card = React.createClass({
+    getInitialState: function () {
+        return {};
+    },
+    componentDidMount: function () {
+        var component = this; // because the context will be changed
+        $.get("https://api.github.com/users/" + this.props.login, function (data) {
+            component.setState(data);
+        });
+    },
     render: function () {
         return (
             <div>
-                <img src="" />
-                <h3>Name</h3>
+                <img src={this.state.avatar_url} width="80" />
+                <h3>{this.state.name}</h3>
                 <hr />
             </div>
         );
@@ -13,13 +22,42 @@ var Card = React.createClass({
 });
 
 
+/* Form component 
+----------------------------------- */
+var Form = React.createClass({
+    handleSubmit: function(e){
+        e.preventDefault();
+        var loginInput = this.refs.login;
+        this.props.addCard(loginInput.value);
+    },
+    render: function(){
+        return(
+            <form onSubmit={this.handleSubmit}>
+                <input placeholder="github name" ref="login"/>
+                <button>Add</button>
+            </form>
+        )
+    }
+});
+
+
 /* Main component 
 ----------------------------------- */
 var Main = React.createClass({
+    getInitialState: function () {
+        return { logins: [] };
+    },
+    addCard: function(loginToAdd){
+        this.setState({logins: this.state.logins.concat(loginToAdd)});
+    },
     render: function () {
+        var cards = this.state.logins.map(function (login) {
+            return (<Card login={login} />);
+        });
         return (
             <div>
-                <Card />
+                <Form addCard={this.addCard} />
+                {cards}
             </div>
         );
     }
@@ -30,5 +68,5 @@ var Main = React.createClass({
 ----------------------------------- */
 ReactDOM.render(
     <Main />,
-    document.getElementById('container') 
+    document.getElementById('container')
 );

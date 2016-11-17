@@ -41,6 +41,11 @@ module.exports = function() {
         github: browserify({
             entries: ['src/assets/js/github.jsx'],
             debug: true
+        }),
+
+        game: browserify({
+            entries: ['src/assets/js/game.jsx'],
+            debug: true
         })
     };
 
@@ -49,4 +54,5 @@ module.exports = function() {
     ----------------------------------- */
     bundleJSX(sources.app, 'app.js');
     bundleJSX(sources.github, 'github.js');
+    bundleJSX(sources.game, 'game.js');
 };

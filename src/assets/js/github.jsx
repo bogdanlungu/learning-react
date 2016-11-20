@@ -1,4 +1,4 @@
-/* Define 
+/* Define
 ----------------------------------- */
 var Card = React.createClass({
     getInitialState: function () {
@@ -22,7 +22,7 @@ var Card = React.createClass({
 });
 
 
-/* Form component 
+/* Form component
 ----------------------------------- */
 var Form = React.createClass({
     handleSubmit: function(e){
@@ -41,7 +41,7 @@ var Form = React.createClass({
 });
 
 
-/* Main component 
+/* Main component
 ----------------------------------- */
 var Main = React.createClass({
     getInitialState: function () {
@@ -52,7 +52,7 @@ var Main = React.createClass({
     },
     render: function () {
         var cards = this.state.logins.map(function (login) {
-            return (<Card login={login} />);
+            return (<Card key={login} login={login} />);
         });
         return (
             <div>

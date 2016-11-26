@@ -1,3 +1,24 @@
+/* Possible combinations of two arrays
+----------------------------------- */
+var possibleCombinationSum = function (arr, n) {
+  if (arr.indexOf(n) >= 0) { return true; }
+  if (arr[0] > n) { return false; }
+  if (arr[arr.length - 1] > n) {
+    arr.pop();
+    return possibleCombinationSum(arr, n);
+  }
+  var listSize = arr.length, combinationsCount = (1 << listSize);
+  for (var i = 1; i < combinationsCount; i++) {
+    var combinationSum = 0;
+    for (var j = 0; j < listSize; j++) {
+      if (i & (1 << j)) { combinationSum += arr[j]; }
+    }
+    if (n === combinationSum) { return true; }
+  }
+  return false;
+};
+
+
 /* Start component
 ----------------------------------- */
 var StarsFrame = React.createClass({
@@ -15,7 +36,7 @@ var StarsFrame = React.createClass({
           {stars}
         </div>
       </div>
-    )
+    );
   }
 
 });
@@ -56,13 +77,13 @@ var ButtonFrame = React.createClass({
       <div id="button-frame">
         {button}
         <button className="btn btn-warning btn-xs refresh" onClick={this.props.redraw}
-                disabled = {this.props.redraws === 0}>
+          disabled={this.props.redraws === 0}>
           <span className="glyphicon glyphicon-refresh"></span>
           &nbsp;
           {this.props.redraws}
         </button>
       </div>
-    )
+    );
   }
 
 });
@@ -79,7 +100,7 @@ var AnswerFrame = React.createClass({
         <span key={i} onClick={props.unselectNumber.bind(null, i)}>
           {i}
         </span>
-      )
+      );
     });
 
     return (
@@ -88,7 +109,7 @@ var AnswerFrame = React.createClass({
           {selectedNumbers}
         </div>
       </div>
-    )
+    );
   }
 
 });
@@ -119,7 +140,7 @@ var NumbersFrame = React.createClass({
           {numbers}
         </div>
       </div>
-    )
+    );
   }
 
 });
@@ -133,7 +154,7 @@ var DoneFrame = React.createClass({
       <div className="well text-center">
         <h2>{this.props.doneStatus}</h2>
       </div>
-    )
+    );
   }
 });
 
@@ -187,8 +208,6 @@ var Game = React.createClass({
   checkAnswer: function () {
     var correct = (this.state.numberOfStars == this.sumOfSelectedNumbers());
     this.setState({ correct: correct });
-    console.log(this.sumOfSelectedNumbers());
-    console.log(correct);
   },
 
   acceptAnswer: function () {
@@ -198,7 +217,10 @@ var Game = React.createClass({
       usedNumbers: usedNumbers,
       correct: null,
       numberOfStars: this.randomNumber()
-    })
+    }, function () {
+      console.log("CallBack");
+      this.updateDoneStatus();
+    });
   },
 
   redraw: function () {
@@ -208,7 +230,37 @@ var Game = React.createClass({
         correct: null,
         selectedNumbers: [],
         redraws: this.state.redraws - 1
+      }, function () {
+        console.log("CallBack");
+        this.updateDoneStatus();
       });
+    }
+  },
+
+  possibleSolution: function () {
+    var numberOfStars = this.state.numberOfStars,
+      possibleNumbers = [],
+      usedNumbers = this.state.usedNumbers;
+
+    for (var i = 1; i <= 9; i++) {
+      if (usedNumbers.indexOf(i) < 0) {
+        possibleNumbers.push(i);
+      }
+    }
+
+    return possibleCombinationSum(possibleNumbers, numberOfStars);
+  },
+
+  updateDoneStatus: function () {
+    console.log(this.state.doneStatus);
+    if (this.state.usedNumbers.length === 9) {
+      this.setState({ doneStatus: 'Done. Nice!' });
+      return;
+    }
+
+    if (this.state.redraws === 0 && !this.possibleSolution()) {
+      this.setState({ doneStatus: 'Game Over!' });
+      return;
     }
   },
 
@@ -222,13 +274,13 @@ var Game = React.createClass({
       doneStatus = this.state.doneStatus,
       bottomFrame;
 
-      if(doneStatus){
-        bottomFrame = <DoneFrame doneStatus={doneStatus} />
-      }else{
-        bottomFrame = <NumbersFrame selectedNumbers={selectedNumbers}
-         usedNumbers={usedNumbers}
-         selectNumber={this.selectNumber} />;
-      }
+    if (doneStatus) {
+      bottomFrame = <DoneFrame doneStatus={doneStatus} />;
+    } else {
+      bottomFrame = <NumbersFrame selectedNumbers={selectedNumbers}
+        usedNumbers={usedNumbers}
+        selectNumber={this.selectNumber} />;
+    }
 
     return (
       <div id="game">
